@@ -1,0 +1,63 @@
+astroid==2.4.2
+autopep8==1.5.4
+beautifultable==1.0.0
+certifi==2020.12.5
+chardet==4.0.0
+chromedriver-autoinstaller==0.2.2
+click==7.1.2
+colorama @ file:///tmp/build/80754af9/colorama_1603211150991/work
+flake8==3.8.4
+Flask==1.1.2
+geographiclib==1.50
+geopy @ file:///home/conda/feedstock_root/build_artifacts/geopy_1609078823613/work
+h11 @ file:///home/conda/feedstock_root/build_artifacts/h11_1609518832927/work
+h2 @ file:///home/conda/feedstock_root/build_artifacts/h2_1603266094922/work
+hpack==4.0.0
+httpcore @ file:///home/conda/feedstock_root/build_artifacts/httpcore_1608119064862/work
+httpx @ file:///home/conda/feedstock_root/build_artifacts/httpx_1607448970965/work
+hyperframe==6.0.0
+idna @ file:///home/conda/feedstock_root/build_artifacts/idna_1593328102638/work
+ImageHash @ file:///home/conda/feedstock_root/build_artifacts/imagehash_1605809872811/work
+isort==5.7.0
+itsdangerous==1.1.0
+jedi==0.17.2
+Jinja2==2.11.2
+lazy-object-proxy==1.4.3
+MarkupSafe==1.1.1
+mccabe==0.6.1
+mkl-fft==1.2.0
+mkl-random==1.1.1
+mkl-service==2.3.0
+olefile==0.46
+opencv-contrib-python==4.5.1.48
+parso==0.7.1
+Pillow @ file:///tmp/build/80754af9/pillow_1603822255246/work
+pluggy==0.13.1
+protobuf==3.13.0
+pycodestyle==2.6.0
+pydocstyle==5.1.1
+pyflakes==2.2.0
+pylint==2.6.0
+python-dateutil==2.8.1
+python-jsonrpc-server==0.4.0
+python-language-server==0.36.2
+PyWavelets @ file:///home/conda/feedstock_root/build_artifacts/pywavelets_1602504439440/work
+requests==2.25.1
+rfc3986 @ file:///home/conda/feedstock_root/build_artifacts/rfc3986_1593217945888/work
+rope==0.18.0
+scipy @ file:///tmp/build/80754af9/scipy_1597686649129/work
+selenium==3.141.0
+selenium-wire==2.1.2
+six @ file:///tmp/build/80754af9/six_1605205327372/work
+sniffio @ file:///home/conda/feedstock_root/build_artifacts/sniffio_1606397143022/work
+snowballstemmer==2.1.0
+tensorboardX @ file:///home/conda/feedstock_root/build_artifacts/tensorboardx_1594067496847/work
+termcolor==1.1.0
+toml==0.10.2
+typing-extensions @ file:///tmp/build/80754af9/typing_extensions_1598376058250/work
+ujson==4.0.2
+urllib3==1.26.2
+wcwidth==0.2.5
+Werkzeug==1.0.1
+wrapt==1.12.1
+yapf==0.30.0
