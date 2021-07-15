@@ -1,10 +1,10 @@
-import bottle
+import dateutil
 import requests
 import json
 import asyncio
 import logging
 
-from datetime import date
+from datetime import date, datetime
 from bottle import (run, post, response, request as breq)
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.dispatcher import FSMContext
@@ -56,11 +56,12 @@ async def parse_dates(state: FSMContext):
         the API, otherwise server side refuses with 400 error.
     '''
     print(f"Updating the prices")
+    now = datetime.now()
     params = {
         'fly_from': "TSE",
         'fly_to': "ALA",
-        'date_from': '23%2F04%2F2020',
-        'date_to': '20%2F05%2F2020',
+        'date_from': f'{now.strftime("%d")}%2F{now.strftime("%m")}%2F{now.strftime("%Y")}',
+        'date_to': f'{(now + dateutil.)}%2F05%2F2020',
         'partner': 'picky',
         'adults': 1,
         'children': 0,
@@ -70,8 +71,12 @@ async def parse_dates(state: FSMContext):
         """
             asyncio sleep guarantees us that during sleep other processes will be still continued 
             and will not be reallocated for sleep fn.
+            Assuming that the code will be started right at 12 AM. Later it can be redone using 
+            timedelta and timenow
         """
         res = requests.get("https://api.skypicker.com/flights", params=params)
+        # Here is the parsing of json file should be done, which I do not know how json file looks like
+
 
 
 
