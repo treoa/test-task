@@ -16,6 +16,7 @@ from aiogram.types import ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButt
 
 
 from creds import *
+from destinations import my_dict
 
 
 # Configure logging

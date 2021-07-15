@@ -19,3 +19,36 @@ dests = {
         'TSE': ['ALA', 'MOW', 'LED'],
     }
 }
+
+my_dict = {
+    "ALA" : {
+        "TSE":"",
+        "MOW":"",
+        "LED":"",
+        "CIT":"",
+    },
+    "TSE": {
+        "ALA":"",
+        "MOW":"",
+        "LED":"",
+        "CIT":"",
+    },
+    "MOW":{
+        "ALA":"",
+        "TSE":"",
+        "LED":"",
+        "CIT":"",
+    },
+    "LED":{
+        "ALA":"",
+        "MOW":"",
+        "TSE":"",
+        "CIT":"",
+    },
+    "CIT":{
+        "ALA":"",
+        "MOW":"",
+        "LED":"",
+        "TSE":"",
+    },
+}
