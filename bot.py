@@ -62,7 +62,7 @@ async def parse_dates(state: FSMContext):
         'fly_from': "TSE",
         'fly_to': "ALA",
         'date_from': f'{now.strftime("%d")}%2F{now.strftime("%m")}%2F{now.strftime("%Y")}',
-        'date_to': f'{(now + dateutil.)}%2F05%2F2020',
+        'date_to': f'{(now + dateutil.relativedelta)}%2F05%2F2020',
         'partner': 'picky',
         'adults': 1,
         'children': 0,

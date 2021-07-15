@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+        test-task:
+                build: .
+                image: test-task:latest
+                container_name: test-task
+                volumes:
+                        - test-media:/media
+                command: /bin/sh -c 'conda env create --file treo.yml; conda activate treo; python3 bot.py'
+volumes:
+        test-media:
+                external: true
