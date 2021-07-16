@@ -251,8 +251,6 @@ async def verify_ticket(query: types.CallbackQuery, state: FSMContext):
         print(f"The chosen flight is unavailale")
 
 
-
-
 async def on_shutdown():
     '''
         Upon the connection of the REDIS database for caching, it is needed to be closed on shutdown.
