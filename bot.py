@@ -48,7 +48,7 @@ class Form(StatesGroup):
     finished = State()
 
 
-async def parse_dates(state: FSMContext):
+async def parse_dates(state:FSMContext):
     '''
         Here is the update of prices should be. But for now it cannot be done, because of 
         absence of affiliate ID to use the Kiwi API.
@@ -81,12 +81,13 @@ async def parse_dates(state: FSMContext):
                 # Here is the parsing of json file should be done, which I do not know how json file looks like
                 the_res = json.loads(res.text)
                 min_book_token = 0
+                min_price = float('inf')
                 for a in range(len(the_res['data'])):
                     if the_res['data'][a]['price'] < min_price:
                         min_book_token = the_res['data'][a]['booking_token']
-                my_dict[from][to] = min_book_token
-
-
+                my_dict[from_dest][to_dest] = min_book_token if min_book_token != 0 else ""
+                async with state.proxy() as data:
+                    data['parsed'] = my_dict
 
 
 async def verification (booking_token:str, currency:str ='KZT', adults:int = 1, children:int = 0, infants:int = 0):
@@ -142,12 +143,12 @@ async def send_message(user_id: int, text: str,
 
 
 @dp.message_handler(state="*", commands='start')
-async def start_handler(message: types.Message):
+async def start_handler(message: types.Message, state:FSMContext):
     """
         Default start handler
     """
-    await Form.started.set()
-    await send_message(message.from_user.id, "Привет, ответь мне если готов искать билеты на авиа!")
+    await Form.started.set()    
+    await send_message(message.from_user.id, "Привет, ответь мне если готов искать билеты на авиа")
 
 
 @dp.message_handler(state=Form.started)
@@ -155,12 +156,23 @@ async def ask_from(message: types.Message, state: FSMContext):
     """
         Ask destination from where passenger is flying
     """
-    await send_message(message.from_user.id, "Куда летим? Отправьте в формате IATA")
+    await send_message(message.from_user.id, "Подожди пока обновятся цены. В идеале это будет делаться без тебя, но сейчас я вынужден обновить свою информацию о билетах!\n Я напишу тебе через несколько секунд!")
+    await parse_dates(state)
+    await send_message(message.from_user.id, "Откуда летим? Отправьте в формате IATA")
     await Form.asked_from.set()
+    async with state.proxy() as data:
+        data['fly_from'] = message.text
 
 
-
-@dp.message_handler
+@dp.message_handler(state=Form.asked_from)
+async def ask_to(message: types.Message, state: FSMContext):
+    """
+        Ask destination to where passenger is flying
+    """
+    await send_message(message.from_user.id, "Куда летим? Отправьте в формате IATA")
+    await Form.asked_to.set()
+    async with state.proxy() as data:
+        data['fly_to'] = message.text
 
 
 async def on_shutdown():
