@@ -49,6 +49,23 @@ class Form(StatesGroup):
 
 
 class DoesNotExist(Exception):
+    """
+        When such ticket does not exist in cache with given destinations
+    """
+    pass
+
+
+class InvalidRequestError(ValueError):
+    """
+        When an invalid request for ticker verification is sent
+    """
+    pass
+
+
+class FlighUnavailable(Exception):
+    """
+        When the given flight in verification is given as invalid for booking
+    """
     pass
 
 
@@ -108,12 +125,15 @@ async def verification (booking_token:str, currency:str ='KZT', adults:int = 1, 
         'infants': infants,
         'partner': 'picky'
     }
-
-    res1 = requests.get('https://booking-api.skypicker.com/api/v0.1/check_flights',
+    try:
+        res1 = requests.get('https://booking-api.skypicker.com/api/v0.1/check_flights',
                         params=params)
-
-    print(f"{res1.json()['price_change']}")
-
+        if res1.status_code == 200:
+            return json.loads(res1.text)
+        else:
+            raise InvalidRequestError
+    except InvalidRequestError:
+        print(f"The request was sent incorrectly")
 
 async def send_message(user_id: int, text: str,
                        disable_notification: bool = False,
@@ -195,7 +215,7 @@ async def ask_to(message: types.Message, state: FSMContext):
 @dp.message_handler(state=Form.asked_to)
 async def checking_ticket(message: types.Message, state: FSMContext):
     """
-        Ask destination to where passenger is flying
+        Ask verification from passenger
     """
     async with state.proxy() as data:
         data['fly_to'] = message.text
@@ -205,8 +225,32 @@ async def checking_ticket(message: types.Message, state: FSMContext):
             token = data['parsed'][data['fly_from'][data['fly_to']]]
             if token == "":
                 raise DoesNotExist
+            msg = f"Passengers: 1 \nAdults: 1 \nChildren: 0 \nInfants: 0\nFly from: {data['fly_from']} \nFly to: {data['fly_to']}"
+            yes_btn = InlineKeyboardButton('Да!', callback_data='yes')
+            await bot.send_message(message.from_user.id, 'Подтверди',
+                           reply_markup=yes_btn)
     except DoesNotExist:
         print(f"Such ticket does not exist")
+
+
+@dp.message_handler(text="yes", state=Form.checking)
+async def verify_ticket(query: types.CallbackQuery, state: FSMContext):
+    """
+        Checking the ticket for availability
+    """
+    try:
+        async with state.proxy() as data:
+            res = verification(booking_token = data['parsed'][data['fly_from']][data['fly_to']])
+            if not res['flights_invalid'] and res['flights_checked']:
+                print(res)
+                await send_message(query.from_user.id, f"```{res}```", parse_mode=types.ParseMode.MARKDOWN)
+                # Here we will make our manipulations with the flight ticket as we need. For now I am not given any further instructions
+            else:
+                raise FlighUnavailable
+    except FlighUnavailable:
+        print(f"The chosen flight is unavailale")
+
+
 
 
 async def on_shutdown():
