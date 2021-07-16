@@ -36,9 +36,8 @@ res = requests.get("https://api.skypicker.com/flights", params=params)
 
 print(res.text)
 
-# res1 = requests.get('https://booking-api.skypicker.com/api/v0.1/check_flights',
-#                     params=params1)
+res1 = requests.get('https://booking-api.skypicker.com/api/v0.1/check_flights',
+                    params=params1)
 
-# print(f"{res1.json()['price_change']}")
-
+print(f"{res1.json()['price_change']}")
 

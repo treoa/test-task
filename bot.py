@@ -58,25 +58,33 @@ async def parse_dates(state: FSMContext):
     '''
     print(f"Updating the prices")
     now = datetime.now()
-    params = {
-        'fly_from': "TSE",
-        'fly_to': "ALA",
-        'date_from': f'{now.strftime("%d")}%2F{now.strftime("%m")}%2F{now.strftime("%Y")}',
-        'date_to': f'{(now + dateutil.relativedelta)}%2F05%2F2020',
-        'partner': 'picky',
-        'adults': 1,
-        'children': 0,
-        'infants': 0,
-    }
-    while True:
-        """
-            asyncio sleep guarantees us that during sleep other processes will be still continued 
-            and will not be reallocated for sleep fn.
-            Assuming that the code will be started right at 12 AM. Later it can be redone using 
-            timedelta and timenow
-        """
-        res = requests.get("https://api.skypicker.com/flights", params=params)
-        # Here is the parsing of json file should be done, which I do not know how json file looks like
+    for from_dest in my_dict:
+        for to_dest in my_dict[from_dest]:
+            params = {
+                'fly_from': from_dest,
+                'fly_to': to_dest,
+                'date_from': f'{now.strftime("%d")}%2F{now.strftime("%m")}%2F{now.strftime("%Y")}',
+                'date_to': f'{(now + dateutil.relativedelta.relativedelta(months=1)).strftime("%d")}%2F{(now + dateutil.relativedelta.relativedelta(months=1)).strftime("%m")}%2F{(now + dateutil.relativedelta.relativedelta(months=1)).strftime("%Y")}',
+                'partner': 'picky',
+                'adults': 1,
+                'children': 0,
+                'infants': 0,
+            }
+            while True:
+                """
+                    asyncio sleep guarantees us that during sleep other processes will be still continued 
+                    and will not be reallocated for sleep fn.
+                    Assuming that the code will be started right at 12 AM. Later it can be redone using 
+                    timedelta and timenow
+                """
+                res = requests.get("https://api.skypicker.com/flights", params=params)
+                # Here is the parsing of json file should be done, which I do not know how json file looks like
+                the_res = json.loads(res.text)
+                min_book_token = 0
+                for a in range(len(the_res['data'])):
+                    if the_res['data'][a]['price'] < min_price:
+                        min_book_token = the_res['data'][a]['booking_token']
+                my_dict[from][to] = min_book_token
 
 
 
