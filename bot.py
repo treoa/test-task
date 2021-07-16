@@ -48,6 +48,10 @@ class Form(StatesGroup):
     finished = State()
 
 
+class DoesNotExist(Exception):
+    pass
+
+
 async def parse_dates(state:FSMContext):
     '''
         Here is the update of prices should be. But for now it cannot be done, because of 
@@ -70,24 +74,23 @@ async def parse_dates(state:FSMContext):
                 'children': 0,
                 'infants': 0,
             }
-            while True:
-                """
-                    asyncio sleep guarantees us that during sleep other processes will be still continued 
-                    and will not be reallocated for sleep fn.
-                    Assuming that the code will be started right at 12 AM. Later it can be redone using 
-                    timedelta and timenow
-                """
-                res = requests.get("https://api.skypicker.com/flights", params=params)
-                # Here is the parsing of json file should be done, which I do not know how json file looks like
-                the_res = json.loads(res.text)
-                min_book_token = 0
-                min_price = float('inf')
-                for a in range(len(the_res['data'])):
-                    if the_res['data'][a]['price'] < min_price:
-                        min_book_token = the_res['data'][a]['booking_token']
-                my_dict[from_dest][to_dest] = min_book_token if min_book_token != 0 else ""
-                async with state.proxy() as data:
-                    data['parsed'] = my_dict
+            """
+                asyncio sleep guarantees us that during sleep other processes will be still continued 
+                and will not be reallocated for sleep fn.
+                Assuming that the code will be started right at 12 AM. Later it can be redone using 
+                timedelta and timenow
+            """
+            res = requests.get("https://api.skypicker.com/flights", params=params)
+            # Here is the parsing of json file should be done, which I do not know how json file looks like
+            the_res = json.loads(res.text)
+            min_book_token = 0
+            min_price = float('inf')
+            for a in range(len(the_res['data'])):
+                if the_res['data'][a]['price'] < min_price:
+                    min_book_token = the_res['data'][a]['booking_token']
+            my_dict[from_dest][to_dest] = min_book_token if min_book_token != 0 else ""
+            async with state.proxy() as data:
+                data['parsed'] = my_dict
 
 
 async def verification (booking_token:str, currency:str ='KZT', adults:int = 1, children:int = 0, infants:int = 0):
@@ -147,8 +150,23 @@ async def start_handler(message: types.Message, state:FSMContext):
     """
         Default start handler
     """
-    await Form.started.set()    
+    await Form.started.set() 
     await send_message(message.from_user.id, "Привет, ответь мне если готов искать билеты на авиа")
+
+
+async def parsing_cncrtly(state: FSMContext):
+    while True:
+        now = datetime.now()
+        future_t = datetime(now.year, now.month, now.day, 23, 59)
+        delta_t = future_t - now
+        delta_t = delta_t.total_seconds() + 60
+        await asyncio.sleep(delta_t)
+        parse_dates(state)
+
+
+async def send_scnd_msg(message:types.Message):
+    await send_message(message.from_user.id, "Откуда летим? Отправьте в формате IATA")
+    await Form.asked_from.set()
 
 
 @dp.message_handler(state=Form.started)
@@ -157,11 +175,10 @@ async def ask_from(message: types.Message, state: FSMContext):
         Ask destination from where passenger is flying
     """
     await send_message(message.from_user.id, "Подожди пока обновятся цены. В идеале это будет делаться без тебя, но сейчас я вынужден обновить свою информацию о билетах!\n Я напишу тебе через несколько секунд!")
-    await parse_dates(state)
-    await send_message(message.from_user.id, "Откуда летим? Отправьте в формате IATA")
-    await Form.asked_from.set()
-    async with state.proxy() as data:
-        data['fly_from'] = message.text
+    t1 = asyncio.create_task(parsing_cncrtly(state))
+    t2 = asyncio.create_task(send_scnd_msg(message))
+    await t1
+    await t2
 
 
 @dp.message_handler(state=Form.asked_from)
@@ -169,10 +186,27 @@ async def ask_to(message: types.Message, state: FSMContext):
     """
         Ask destination to where passenger is flying
     """
+    async with state.proxy() as data:
+        data['fly_from'] = message.text
     await send_message(message.from_user.id, "Куда летим? Отправьте в формате IATA")
     await Form.asked_to.set()
+    
+
+@dp.message_handler(state=Form.asked_to)
+async def checking_ticket(message: types.Message, state: FSMContext):
+    """
+        Ask destination to where passenger is flying
+    """
     async with state.proxy() as data:
         data['fly_to'] = message.text
+    await Form.checking.set()
+    try:
+        async with state.proxy() as data:
+            token = data['parsed'][data['fly_from'][data['fly_to']]]
+            if token == "":
+                raise DoesNotExist
+    except DoesNotExist:
+        print(f"Such ticket does not exist")
 
 
 async def on_shutdown():
